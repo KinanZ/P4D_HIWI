@@ -27,6 +27,8 @@ import cvxopt.solvers
 import itertools
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import nanmean
+from numpy import nanstd
 import os
 import scipy as sp
 import scipy.misc
@@ -483,7 +485,14 @@ def quant_hist(sizes,I,dh,TimeBin,darks,contime):
     di=np.argmax((contime-contime[0])>dh*60.0)
     ID=range(di,I)
     dsizes=[60.0*np.log(1.0*sizes[i]/sizes[i-di])/(contime[i]-contime[i-di]) for i in ID] 
-    do=np.abs(np.diff(darks))    
+    do=np.abs(np.diff(darks))
+    #print "do size: ", do.shape
+    #print "do: ", do
+    #print "sizes size: ", sizes.shape 
+    #print "sizes: ", sizes
+    if(do.shape<sizes.shape):
+        do = np.append(do,0)
+    
     no=int(darks[0])    
     nsizes=sizes[do==1]      
     msizes=[np.log(1.0*nsizes[i]/nsizes[i-1])/12.0 for i in range(1,len(nsizes))]    
@@ -497,8 +506,8 @@ def quant_fold(II,bins,dsizes,HH):
     I=len(II)
     for i in range(I):
         fsizes[bins[i]].append(dsizes[i])    
-    fsizes_avg=np.array([sp.stats.nanmean(h) for h in fsizes])[HH]
-    fsizes_std=np.array([sp.stats.nanstd(h,bias=1) for h in fsizes])[HH]    
+    fsizes_avg=np.array([np.nanmean(h) for h in fsizes])[HH]
+    fsizes_std=np.array([np.nanstd(h,ddof=1) for h in fsizes])[HH]    
     fsizes_davg=np.hstack([fsizes_avg[h] for h in HH[:H/2]])
     fsizes_navg=np.hstack([fsizes_avg[h] for h in HH[H/2:]])
     return fsizes_avg,fsizes_std,fsizes_davg,fsizes_navg

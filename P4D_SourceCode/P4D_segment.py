@@ -55,7 +55,7 @@ def segment(inp):
         imF=1.0*np.vstack(itertools.imap(np.uint8,png.Reader(dirF+focus).read()[2]))            # read depth image
 #        imD=1.0*sp.ndimage.imread(dirD+depth)                                                  # alternative read function
 #        imF=1.0*sp.ndimage.imread(dirF+focus)                                                  # alternative read function
-                    
+        print "imD", imD.shape
         ################################################### segmentation plant
                 
         ly,lx=np.shape(imF)                                                                     # get image shape

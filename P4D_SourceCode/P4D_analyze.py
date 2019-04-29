@@ -333,7 +333,7 @@ def analyze(inp):
             y=np.hstack([y,y])
         (m,b),status=sp.optimize.curve_fit(P4D_help.fit_linear,x,y,[0.1,0.1])                           # linear fit of growth curves
         III=np.arange(dayZ,I)        
-        plt.plot(x,y,ls='.',marker='o',color=plt.cm.jet(1.0*s/(S-1.0)),lw=2,mec='None',alpha=0.5)
+        plt.plot(x,y,ls='dotted',marker='o',color=plt.cm.jet(1.0*s/(S-1.0)),lw=2,mec='None',alpha=0.5)
         plt.plot(III,P4D_help.fit_linear(III,m,b),color=plt.cm.jet(1.0*s/(S-1.0)),lw=2)
         plt.text(600,y[-1],str(P4D_help.fit_linear(dayZ,m,b))+'/'+str(beta[s]),color=plt.cm.jet(1.0*s/(S-1.0)),alpha=0)
         yax.append(-P4D_help.fit_linear(dayZ,m,b))                                                      # store abscissas of linear fits
@@ -546,7 +546,7 @@ def analyze(inp):
             IJ=np.arange(min(10000-1,r),10000)                                                                  # auxilliary array for plotting
             areaz=np.poly1d(poly)(IJ)                                                                           # areas from polynomial fit         
             plt.errorbar(II[idx],areay[idx],sigma,color=cobs[b],alpha=0.1)
-            plt.plot(II[idx],areay[idx],color=cobs[b],ls='.',marker='o',mec='none',lw=2,alpha=0.1)              # plot leaf areas
+            plt.plot(II[idx],areay[idx],color=cobs[b],ls='dotted',marker='o',mec='none',lw=2,alpha=0.1)              # plot leaf areas
             plt.plot(IJ,areaz,color=cobs[b],lw=2,alpha=1.0,ls='-')                                              # plot polynomial fit
             plt.plot([r,r],[-100,1000],color=cobs[b],lw=2,ls='--',alpha=1.0)                                    # plot timing of leaf appearance
             plt.text(r,10,leafs[b],ha='center')                                                                          # label leaf by number

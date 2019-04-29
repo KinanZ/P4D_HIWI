@@ -36,7 +36,9 @@ import skimage.morphology
 import skimage.feature
 import skimage.measure
 import skimage.segmentation
+import skimage.io
 import time
+import cv2
 
 import P4D_help                 # implementations of various auxiliary functions
 reload(P4D_help)
@@ -51,15 +53,18 @@ def segment(inp):
             
     for i in [i]:                                                                               # for the current image do
     
-        imD=1.0*np.vstack(itertools.imap(np.uint16,png.Reader(dirD+depth).read()[2]))           # read focus image
-        imF=1.0*np.vstack(itertools.imap(np.uint8,png.Reader(dirF+focus).read()[2]))            # read depth image
+        #imD=1.0*np.vstack(itertools.imap(np.uint16,png.Reader(dirD+depth).read()[2]))          # read focus image
+        imD = skimage.io.imread(dirD+depth)
+        imF = 1.0*np.vstack(itertools.imap(np.uint8,png.Reader(dirF+focus).read()[2]))          # read depth image
+        imF = cv2.resize(imF, (imD.shape[1],imD.shape[0]))
 #        imD=1.0*sp.ndimage.imread(dirD+depth)                                                  # alternative read function
 #        imF=1.0*sp.ndimage.imread(dirF+focus)                                                  # alternative read function
-        print "imD", imD.shape
+        print "imD", type(imD), imD.shape
+        print "imF", type(imF), imF.shape
         ################################################### segmentation plant
                 
         ly,lx=np.shape(imF)                                                                     # get image shape
-        imS=skimage.filters.edges.sobel(imF)                                                           # find weighted edge image using Sobel filter
+        imS=skimage.filters.edges.sobel(imF)                                                    # find weighted edge image using Sobel filter
         mark=np.zeros_like(imS)                                                                 # create auxilliary array for watershed seed points
         mark[imF<SegBGupper]=1                                                                  # set low intensity pixels as background
         mark[imF>SegFGlower]=2                                                                  # set high intensity pixels as foreground

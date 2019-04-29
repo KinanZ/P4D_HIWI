@@ -46,7 +46,7 @@ if __name__=='__main__':                        # freeze support for multiproces
 ###################################################### folders and parameters
 
 MainPath='/home/kinan/Desktop/HIWI/test_Machine'           # path with image time series
-MainFolder='140601_1900_Col0_vs_pgm'            # folder of experiment to analyze, second number is start of night, e.g., 19:00
+MainFolder='140601_1900_Col0_vs_pgm&tiff'            # folder of experiment to analyze, second number is start of night, e.g., 19:00
 MainCores=4                                     # number of cores
 MainNth=1                                       # analyze only every nth subfolder
 MainOverwrite=0                                 # Boolean parameter to control wether already generated output is overwritten or not

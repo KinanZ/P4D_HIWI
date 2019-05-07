@@ -49,19 +49,32 @@ def segment(inp):
     '''Function segments plant and individual leaves and computes plant and leaf positions and features. Takes focus and depth images as inputs.'''
     
     f,F,i,I,depth,focus,dirD,dirF,dirM,dirN,dirP,dirS,dirV,MainPath,MainCores,SegBGupper,SegFGlower,SegSigmaGauss,SegSigmaCanny,SegThresSlope,SegThresAbsci,SegRadiusOriginHeight,SegRadiusLeafHeight,SegRadiusStemEraser,DoTrack,temp=inp    # input parameters
-    tempo=time.time()                                                                                                                                                                                                                               # remember starting time
+    tempo=time.time()                                                                                                                                                                                                                          # remember starting time
             
     for i in [i]:                                                                               # for the current image do
     
-        #imD=1.0*np.vstack(itertools.imap(np.uint16,png.Reader(dirD+depth).read()[2]))          # read focus image
-        imD = skimage.io.imread(dirD+depth)
-        imF = 1.0*np.vstack(itertools.imap(np.uint8,png.Reader(dirF+focus).read()[2]))          # read depth image
+        imD = skimage.io.imread(dirD+depth)                                                     # read depth image
+        imF=1.0*sp.ndimage.imread(dirF+focus)                                                   # read focus image
+         
+        #plt.figure(0)
+        #plt.title("focus befor resizing")
+        #plt.imshow(imF)
+        #plt.show()
+        
         imF = cv2.resize(imF, (imD.shape[1],imD.shape[0]))
-#        imD=1.0*sp.ndimage.imread(dirD+depth)                                                  # alternative read function
-#        imF=1.0*sp.ndimage.imread(dirF+focus)                                                  # alternative read function
-        print "imD", type(imD), imD.shape
-        print "imF", type(imF), imF.shape
+
+        #print "imD", type(imD), imD.shape
+        #print "imF", type(imF), imF.shape
         ################################################### segmentation plant
+
+        #plt.figure(1)
+        #plt.title("depth")
+        #plt.imshow(imD)
+        #plt.show()
+        #plt.figure(2)
+        #plt.title("focus")
+        #plt.imshow(imF)
+        #plt.show()
                 
         ly,lx=np.shape(imF)                                                                     # get image shape
         imS=skimage.filters.edges.sobel(imF)                                                    # find weighted edge image using Sobel filter
@@ -148,7 +161,8 @@ def segment(inp):
         coords=np.zeros((L,5,3))                                                                                # array for leaf positions
         imSM=P4D_help.restricted_gaussian_smoothing(imD,imPL,SegSigmaGauss)                                     # smooth depth image
         plant,pixelsizes=P4D_help.virtual2metric(P4D_help.gray2virtual(imSM))                                   # compute metric depth image and pixelsizes
-        imSHOW=imF.copy()*0                                                                                     # create mask for leaf blades
+        imSHOW=imF.copy()*0
+        #print "enumerate(range(1,L+1))", list(enumerate(range(1,L+1)))                                                                             # create mask for leaf blades
         for li,l in enumerate(range(1,L+1)):                                                                    # for each leaf do     
             imMASK=(imSEG==l)                                                                                   # array for leaf mask               
             imLEAF=skimage.filters.rank.minimum(imMASK,disk)>0                                                   # erode leaf to remove petiole    

@@ -444,7 +444,7 @@ def surface_area(depth,mask,pixelsizes):
 
 def leaf_orientation(depth,mask,radial,radius):
     '''Given a depth image and a mask that represents the region of interest, compute the heights of the base-, tip-, right-, left-, center-points in mask. The heights are averaged over a disk of radius and restricted to the mask.'''  
-    ly,lx=depth.shape
+    lx,ly=depth.shape
     leaf_xyz=[[] for i in range(5)]        
     leaf_xyz[0]=list(sp.ndimage.maximum_position(-radial,labels=mask))                      # base    
     leaf_xyz[1]=list(sp.ndimage.maximum_position(radial,labels=mask))                       # tip
@@ -453,12 +453,14 @@ def leaf_orientation(depth,mask,radial,radius):
     leaf_xyz[3]=list(sp.ndimage.maximum_position(-grad,labels=mask))                        # left
     leaf_xyz[4]=list(sp.ndimage.center_of_mass(mask))                                       # center
     for i in range(5):                                                                      # z-heights
-        ball=np.zeros((ly,lx))
+        ball=np.zeros((lx,ly))
         a=skimage.draw.ellipse(leaf_xyz[i][0],leaf_xyz[i][1],radius,radius)
-        idx=(a[0]>=0)*(a[0]<lx)*(a[1]>=0)*(a[1]<ly)            
-        ball[(a[0][idx],a[1][idx])]=1
+        idx=(a[0]>=0)*(a[0]<lx)*(a[1]>=0)*(a[1]<ly)
+
+        ball[(a[0][idx],a[1][idx])]=1            
         height=np.median(depth[ball*mask>0])
         leaf_xyz[i].append(height)
+
     return np.array(leaf_xyz)
            
 ################################################ plot day-night cycle

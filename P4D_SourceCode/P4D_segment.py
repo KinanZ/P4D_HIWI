@@ -43,6 +43,68 @@ import cv2
 import P4D_help                 # implementations of various auxiliary functions
 reload(P4D_help)
 
+def split(image):
+
+    height, width = image.shape[:2]
+    #print image.shape
+
+    # Let's get the starting pixel coordiantes (top left)
+    start_row, start_col = int(0), int(0)
+    # Let's get the ending pixel coordinates (top left)
+    end_row, end_col = int(height * .5), int(width * .5)
+    cropped_top_left = image[start_row:end_row , start_col:end_col]
+    #print start_row, end_row 
+    #print start_col, end_col
+
+    #cv2.imshow("Cropped Top left", cropped_top_left) 
+    #cv2.waitKey(0) 
+    #cv2.destroyAllWindows()
+
+    # Let's get the starting pixel coordiantes (bottom left)
+    start_row, start_col = int(height * .5), int(0)
+    # Let's get the ending pixel coordinates (bottom left)
+    end_row, end_col = int(height), int(width * .5)
+    cropped_bot_left = image[start_row:end_row , start_col:end_col]
+    #print start_row, end_row 
+    #print start_col, end_col
+
+    #cv2.imshow("Cropped Bot left", cropped_bot_left) 
+    #cv2.waitKey(0) 
+    #cv2.destroyAllWindows()
+
+    # Let's get the starting pixel coordiantes (top right)
+    start_row, start_col = int(0), int(width * .5)
+    # Let's get the ending pixel coordinates (top right)
+    end_row, end_col = int(height * .5), int(width)
+    cropped_top_right = image[start_row:end_row , start_col:end_col]
+    #print start_row, end_row 
+    #print start_col, end_col
+
+    #cv2.imshow("Cropped Top right", cropped_top_right) 
+    #cv2.waitKey(0) 
+    #cv2.destroyAllWindows()
+
+    # Let's get the starting pixel coordiantes (bottom right)
+    start_row, start_col = int(height * .5), int(width * .5)
+    # Let's get the ending pixel coordinates (bottom right)
+    end_row, end_col = int(height), int(width)
+    cropped_bot_right = image[start_row:end_row , start_col:end_col]
+    #print start_row, end_row 
+    #print start_col, end_col
+
+    #cv2.imshow("Cropped Bot right", cropped_bot_right) 
+    #cv2.waitKey(0) 
+    #cv2.destroyAllWindows()
+
+    # remove the annoying part in the image
+    height, width = cropped_top_left.shape[:2]
+    start_row, start_col = int(0), int(0)
+    end_row, end_col = int(height), int(width * .32)
+    cropped_top_left[start_row:end_row , start_col:end_col] = cropped_top_left.mean()
+
+    return cropped_top_left
+
+
 ######################################################### segment
 
 def segment(inp):  
@@ -54,90 +116,109 @@ def segment(inp):
     for i in [i]:                                                                               # for the current image do
     
         imD = skimage.io.imread(dirD+depth)                                                     # read depth image
-        imF=1.0*sp.ndimage.imread(dirF+focus)                                                   # read focus image
-         
-        #plt.figure(0)
-        #plt.title("focus befor resizing")
-        #plt.imshow(imF)
-        #plt.show()
-        
+        imF = 1.0*sp.ndimage.imread(dirF+focus)                                                 # read focus image
+
         imF = cv2.resize(imF, (imD.shape[1],imD.shape[0]))
+
+        imD = split(imD)
+        imF = split(imF)
 
         #print "imD", type(imD), imD.shape
         #print "imF", type(imF), imF.shape
+
+        pli.imsave("debug/depth"+str(i).zfill(6)+'.png', 1.0*imD)
+        pli.imsave("debug/focus"+str(i).zfill(6)+'.png', 1.0*imF)
+
         ################################################### segmentation plant
 
-        #plt.figure(1)
-        #plt.title("depth")
-        #plt.imshow(imD)
-        #plt.show()
-        #plt.figure(2)
-        #plt.title("focus")
-        #plt.imshow(imF)
-        #plt.show()
-                
         ly,lx=np.shape(imF)                                                                     # get image shape
         imS=skimage.filters.edges.sobel(imF)                                                    # find weighted edge image using Sobel filter
         mark=np.zeros_like(imS)                                                                 # create auxilliary array for watershed seed points
         mark[imF<SegBGupper]=1                                                                  # set low intensity pixels as background
         mark[imF>SegFGlower]=2                                                                  # set high intensity pixels as foreground
+
+        pli.imsave("debug/sobel_on_focus"+str(i).zfill(6)+'.png', 1.0*imS)                                                                             
+        
         imWS=(skimage.morphology.watershed(imS,mark)-1)>0                                       # perform watershed segmentation using seed points and Sobel-filtered image  
         imL,N=sp.ndimage.label(imWS)                                                            # label connected components
         coms=np.array(sp.ndimage.center_of_mass(imWS,imL,range(1,1+N)))                         # compute center of mass for each labeled component
         dists=np.sqrt(np.sum(np.subtract([0.5*ly,0.5*lx],coms)**2,1))                           # compute distances of components to middle of the image
+
+        pli.imsave("debug/watershed_bool_bigger_than_0_on_sobel"+str(i).zfill(6)+'.png', 1.0*imWS)
+        
         mask=dists>600.0                                                                        # chose distances that exceed 600 pixels
         imCL=imWS.copy()                                                                        # create auxilliary array
         imCL[mask[imL-1]]=0                                                                     # remove small far-off components
         imL,N=sp.ndimage.label(imCL)                                                            # label remaining components    
         sizes=sp.ndimage.sum(imCL,imL,range(1,N+1))                                             # compute pixelnumber of each component      
         imPL=skimage.morphology.remove_small_objects(imCL,np.sort(sizes)[-1])                   # remove all but the largest component
+        pli.imsave("debug/remove_small_objects_on_water_shed"+str(i).zfill(6)+'.png', 1.0*imPL)
         wh=np.where(imPL)                                                                       # get coordinates of a plant pixels
         b0,b1,a0,a1=min(wh[0]),max(wh[0]),min(wh[1]),max(wh[1])                                 # compute bounding box of plant
         bd,ad=b1-b0,a1-a0                                                                       # compute edge lengths of bounding box
         
-#        plt.clf()                                                                              # plotting functions for testing purposes
-#        plt.imshow(1.0*imF,interpolation='nearest',alpha=1.0,origin='lower',cmap='gray')    
-#        plt.imshow(np.where(imPL,1.0,np.nan),interpolation='nearest',alpha=0.5,origin='lower')
-#        plt.show()  
-        
+        plt.clf()                                                                              # plotting functions for testing purposes
+        plt.imshow(1.0*imF,interpolation='nearest',alpha=1.0,origin='lower',cmap='gray')    
+        plt.imshow(np.where(imPL,1.0,np.nan),interpolation='nearest',alpha=0.5,origin='lower')
+        #plt.show()  
+        plt.savefig("debug/first_original_check"+str(i).zfill(6)+'.png')
+
         ################################################### find center of mass and its height
                 
         imSM=P4D_help.restricted_gaussian_smoothing(imD,~imPL,SegSigmaGauss)                            # smooth depth image with a Gaussian filter
+
+        pli.imsave("debug/gaussian_smoothing_on_depth+removed_small_objects"+str(i).zfill(6)+'.png', 1.0*imSM)
+        
         ground,pixelsizes=P4D_help.virtual2metric(P4D_help.gray2virtual(imSM))                          # compute depth image to metric distances         
         middle=list(sp.ndimage.center_of_mass(imPL))                                                    # compute x-y-middle of plant via center of mass 
         ball=np.zeros((ly,lx))                                                                          # create auxilliary array to compute height of middle                     
         idxs=skimage.draw.ellipse(middle[0],middle[1],SegRadiusOriginHeight,SegRadiusOriginHeight)      # create ellipse around middle
-        idx=(idxs[0]>=0)*(idxs[0]<lx)*(idxs[1]>=0)*(idxs[1]<ly)                                         # restrict to image                 
+        idx=(idxs[0]>=0)*(idxs[0]<ly)*(idxs[1]>=0)*(idxs[1]<lx)                                         # restrict to image                 
         ball[(idxs[0][idx],idxs[1][idx])]=1                                                             # draw ellipse around middle of the plant                                                
         mask=(ball*(~imPL))>0                                                                           # restrict ellipse to non-plant pixels
         middle.append(np.median(ground[mask]))                                                          # compute z-height of middle
         middle=np.array(middle)                                                                         # convert middle coordinates to array
         imRA=np.sqrt(P4D_help.radial_profile(lx,ly,middle[1],middle[0]))                                # generate radial profile around middle
         
-#        plt.clf()                                                                                      # plotting functions for testing purposes
-#        plt.imshow(imPL,interpolation='nearest',alpha=0.5,origin='lower')
-#        plt.imshow(mask,interpolation='nearest',alpha=0.5,origin='lower')
-#        plt.imshow(imRA,interpolation='nearest',alpha=0.5,origin='lower')
-#        plt.plot(middle[1],middle[0],marker='s',ls='dotted',color='white')
-#        plt.axis([x0,x1,y0,y1])
-#        plt.show()    
+        pli.imsave("debug/draw_ellipse_on_removed_small_objects"+str(i).zfill(6)+'.png', 1.0*imRA)
+        
+        plt.clf()                                                                                     # plotting functions for testing purposes
+        plt.imshow(imPL,interpolation='nearest',alpha=0.5,origin='lower')
+        plt.imshow(mask,interpolation='nearest',alpha=0.5,origin='lower')
+        plt.imshow(imRA,interpolation='nearest',alpha=0.5,origin='lower')
+        plt.plot(middle[1],middle[0],marker='s',ls='dotted',color='white')
+        #plt.axis([x0,x1,y0,y1])
+        #plt.show()
+        plt.savefig("debug/second_original_check"+str(i).zfill(6)+'.png')
         
         ################################################### segment leafs
                 
         imPB=skimage.segmentation.find_boundaries(imPL)                                                         # get boundary of plant
-        imPR=skimage.morphology.remove_small_objects(imPB,800,connectivity=2)                                   # remove small connected components
+
+        pli.imsave("debug/find_boundaries_removed_small_objects"+str(i).zfill(6)+'.png', 1.0*imPB)
+        
+        imPR=skimage.morphology.remove_small_objects(imPB,connectivity=2)                                   # remove small connected components
+        
+        pli.imsave("debug/imPR"+str(i).zfill(6)+'.png', 1.0*imPR)
+        
         ones=np.ones((3,3))                                                                                     # create auxilliary array
         disk=skimage.morphology.disk(SegRadiusStemEraser)                                                       # create auxilliary array 
-        imE=skimage.feature.canny(imF.astype('uint8'),sigma=SegSigmaCanny)                                       # compute binary edge image using Canny filter    
+        imE=skimage.feature.canny(imF.astype('uint16'),sigma=SegSigmaCanny)                                                      # compute binary edge image using Canny filter    
+
+        pli.imsave("debug/canny_on_focus"+str(i).zfill(6)+'.png', 1.0*imE)
+        
         imA=(imE*imPL+imPR)>0                                                                                   # combine plant boundaries and inner edges    
+
+        pli.imsave("debug/canny_x_removed_small_object_+_boundaries_bool_positive"+str(i).zfill(6)+'.png', 1.0*imA)
+        
         imEDT=sp.ndimage.distance_transform_edt(~imA)*imPL                                                      # compute distance transform of combined edge image
         imX2=skimage.feature.peak_local_max(imEDT,min_distance=20,indices=0,exclude_border=0)                   # find local maxima at smaller distances
         imX6=skimage.feature.peak_local_max(imEDT,min_distance=40,indices=0,exclude_border=0)                   # find local maxima at larger distances
         imX=np.where(imRA<200.0,imX2,imX6)                                                                      # keep closer maxima towards the middle and more distant maxima away from the middle of the plant
-        imSD1=skimage.filters.rank.maximum(imX,disk)>0                                                           # expand maxima to provide more robust seed points for watershed segmentation
+        imSD1=skimage.filters.rank.maximum(imX,disk)>0                                                          # expand maxima to provide more robust seed points for watershed segmentation
         imSD2=imEDT>(imRA*SegThresSlope+SegThresAbsci)                                                          # binarise distance transform with threshold that increases with distance from the middle of the plant
         imL,N=sp.ndimage.label((imSD1+imSD2)>0,ones)                                                            # label the combined image of local maxima and thresholded distance transform
-        imY=-1.0*skimage.filters.gaussian(1.0*imEDT*imPL,1.0)*imPL*imRA                                   # smooth the distance transform to fill out the whole plant and bias it towards to middle of the plant         
+        imY=-1.0*skimage.filters.gaussian(1.0*imEDT*imPL,1.0)*imPL*imRA                                         # smooth the distance transform to fill out the whole plant and bias it towards to middle of the plant         
         imSEG=skimage.morphology.watershed(imY,imL,mask=imPL)                                                   # perform the watershed segmentation     
         L=imSEG.max()                                                                                           # compute the number of labeled leaves
         for li,l in enumerate(range(1,L+1)):                                                                    # remove all labeled components with only few pixels
@@ -187,7 +268,7 @@ def segment(inp):
         origin=list(P4D_help.minimize_distance_to_lines(middle[:2],points))                                     # compute leaf origin as point with minimal distance to the four leaf axes
         ball=np.zeros((ly,lx))                                                                                  # auxilliary array to compute height of origin                                                                       # create auxilliary array               
         idxs=skimage.draw.ellipse(origin[0],origin[1],SegRadiusOriginHeight,SegRadiusOriginHeight)              # create ellipse around middle
-        idx=(idxs[0]>=0)*(idxs[0]<lx)*(idxs[1]>=0)*(idxs[1]<ly)                                                 # restrict to image                 
+        idx=(idxs[0]>=0)*(idxs[0]<ly)*(idxs[1]>=0)*(idxs[1]<lx)                                                 # restrict to image                 
         ball[(idxs[0][idx],idxs[1][idx])]=1                                                                     # draw ellipse around middle of the plant           
         mask=(ball*(~imPL))>0                                                                                   # mask around origin restricted to non-plant
         origin.append(np.median(ground[mask]))                                                                  # compute metric height of origin

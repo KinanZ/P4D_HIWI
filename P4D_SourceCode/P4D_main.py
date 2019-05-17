@@ -46,7 +46,7 @@ if __name__=='__main__':                        # freeze support for multiproces
 ###################################################### folders and parameters
 
 MainPath='/home/kinan/Desktop/HIWI/test_Machine'           # path with image time series
-MainFolder='140601_1900_Col0_vs_pgm&tiff'            # folder of experiment to analyze, second number is start of night, e.g., 19:00
+MainFolder='140601_1900_Col0_vs_pgm_tiff'            # folder of experiment to analyze, second number is start of night, e.g., 19:00
 MainCores=4                                     # number of cores
 MainNth=1                                       # analyze only every nth subfolder
 MainOverwrite=0                                 # Boolean parameter to control wether already generated output is overwritten or not
@@ -56,10 +56,10 @@ DoAnalyze=1                                     # do analysis (track leaves, ass
 DoPlot=1                                        # do single plots (different automated plots of all plant and leaf features)
 DoMulti=1                                       # do multi comparison (combine data of multiple folders for different genotypes and generate customized plots for publication)
 
-SegBGupper=25                                   # upper threshold for image background
-SegFGlower=80                                   # lower threshold for image foreground
+SegBGupper=16000                                # upper threshold for image background
+SegFGlower=22500                                # lower threshold for image foreground
 SegSigmaGauss=50.0                              # sigma of Gaussian filter for smoothing depth image
-SegSigmaCanny=2.0                               # sigma of Canny filter for detection of leaf edges             
+SegSigmaCanny=2.75                              # sigma of Canny filter for detection of leaf edges             
 SegThresSlope=0.1                               # slope of radially increasing threshold to find watershed seeds from distance transformed image
 SegThresAbsci=20.0                              # abscissa of radially increasing threshold to find watershed seeds from distance transformed image
 SegRadiusOriginHeight=200.0                     # size of disk for determining height of origin in pixels

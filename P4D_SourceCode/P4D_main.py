@@ -59,12 +59,12 @@ DoMulti=1                                       # do multi comparison (combine d
 SegBGupper=16000                                # upper threshold for image background
 SegFGlower=22500                                # lower threshold for image foreground
 SegSigmaGauss=50.0                              # sigma of Gaussian filter for smoothing depth image
-SegSigmaCanny=2.75                              # sigma of Canny filter for detection of leaf edges             
+SegSigmaCanny=3.0                               # sigma of Canny filter for detection of leaf edges             
 SegThresSlope=0.1                               # slope of radially increasing threshold to find watershed seeds from distance transformed image
 SegThresAbsci=20.0                              # abscissa of radially increasing threshold to find watershed seeds from distance transformed image
-SegRadiusOriginHeight=200.0                     # size of disk for determining height of origin in pixels
-SegRadiusLeafHeight=20.0                        # size of disk for determining height of leaf positions in pixels
-SegRadiusStemEraser=20.0                        # size of disk for removing leaf petioles
+SegRadiusOriginHeight=60.0                     # size of disk for determining height of origin in pixels
+SegRadiusLeafHeight=10.0                        # size of disk for determining height of leaf positions in pixels
+SegRadiusStemEraser=10.0                        # size of disk for removing leaf petioles
 
 AnaTrackOver=0                                  # overwrite tracking results
 AnaTrackStop=900                                # stop analyzing at given frame

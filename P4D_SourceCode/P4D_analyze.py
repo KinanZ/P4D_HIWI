@@ -34,6 +34,7 @@ import scipy.misc
 import scipy.ndimage
 import scipy.optimize
 import time
+import cv2
 
 import P4D_help                                 # implementations of various auxiliary functions
 reload(P4D_help)
@@ -92,6 +93,7 @@ def analyze(inp):
         tracks=np.load(namc)     
         table=np.load(nama)          
     T=int(table[:,0].max())+1                                                                                                   # set number of tracks
+    #print "T: ", T
     TT=range(T)                                                                             
     print 'analyze:','folder',f+1,F,'tracking',(time.time()-temp)/60.0,'min'                                                    # print duration of tracking
  
@@ -131,6 +133,7 @@ def analyze(inp):
     Q1=Q-Q0   
     QQ=range(Q)    
     quants=[[[] for i in II] for q in QQ]                                                                                       # create container for all properties    
+    #print "files[0]: ", files[0][]
     for i in range(I):                                                                                                          # for each image compute plant properties        
         day=int(files[i][-18:-16])                                                                                              # compute plant time info
         quants[0][i].append(day)                                                       
@@ -307,8 +310,11 @@ def analyze(inp):
     
 ###################################################### presort angles    
   
-    im=1.0*np.vstack(itertools.imap(np.uint8,png.Reader(folder+'/focus/'+files[I-1]).read()[2]))        # read focus image for plotting  
-    S=6                                                                                                 # infer order of leaf pairing from first six leaves
+    #im=1.0*np.vstack(itertools.imap(np.uint8,png.Reader(folder+'/focus/'+files[I-1]).read()[2]))        # read focus image for plotting  
+    im = 1.0*sp.ndimage.imread(folder+'/focus/'+files[I-1])
+    im = cv2.resize(im, (0,0), fx=0.5, fy=0.5)
+    # Why 6?
+    S=4                                                                                                # infer order of leaf pairing from first six leaves
     SS=range(S)
     lengths=np.array([((table[:,0]==t)*(table[:,1]<400)).sum() for t in TT])                            # compute lengths of tracks restricted to first 400 images    
     if(len(lengths)<6):
@@ -325,6 +331,8 @@ def analyze(inp):
     oy,ox=data[I-1][1][0],data[I-1][1][1]                                                               # get plant origin for plotting
     plt.subplot(121)
     yax=[]
+    #print "times", np.shape(times)
+    #print "six", np.shape(six)
     for s in SS:        
         x=np.array(times[six[s]])
         y=np.array(areas[six[s]]) 
@@ -410,7 +418,9 @@ def analyze(inp):
             
     ### assign early leafs first         
     bet=np.mod(np.hstack([angz[0:-1],angz[-1]+diri*np.arange(B-5)*dT*1.0]),360.0)               # set hypothetical leaf angles and continue with golden angle for up to eight leaves
-    order=np.arange(0,B)#np.hstack([np.arange(2,S),np.arange(0,2),np.arange(S,B)])                             # assign leaves 1 to 4 first, then the hypocotyls, then leaves 5-6
+    order=np.arange(0,np.shape(bet)[0])#np.hstack([np.arange(2,S),np.arange(0,2),np.arange(S,B)])                             # assign leaves 1 to 4 first, then the hypocotyls, then leaves 5-6
+    #print "order", np.shape(order), order
+    #print "bet", np.shape(bet), bet
     xx=np.zeros((A,B))                                                                          # create auxilliary array for assignment of track a to leaf position b
     for bi,b in enumerate(bet[order]):                                                          # for each leaf angle do
         bio=order[bi]                                                                           # get leaf position index
@@ -434,7 +444,7 @@ def analyze(inp):
 
     plt.clf()                                                                                                                       # plot focus image and tracks according to infered leaf assignments
     plt.imshow(im,origin='lower',cmap='gray')
-    for b in range(B):                                                                                                              # plot hypothetical leaf positions
+    for b in range(np.shape(bet)[0]):                                                                                                              # plot hypothetical leaf positions
         plt.plot([ox,400*np.sin(bet[b]*deg2rad)+ox],[oy,400*np.cos(bet[b]*deg2rad)+oy],color=cobs[b],lw=2,ls='--')  
         plt.text(420*np.sin(bet[b]*deg2rad)+ox,420*np.cos(bet[b]*deg2rad)+oy,leafs[b],color='white',ha='center',va='center') 
     for s in range(S):                                                                                                              # plot cytoledons and first four leaf positions

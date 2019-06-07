@@ -59,6 +59,7 @@ def multi(inp):
     full=cfull.as_matrix()  
     J,QA=full.shape         
     I=AnaTrackStop#  J-10#                                                                                                                                                                                  # set number of images to include in analysis
+    print "I= ", I
     II=np.arange(I)  
     Fg=[len(folderz[g]) for g in GG]                                                                                                                                                                        # compute number of folders per genotype
     prer3D=[[np.zeros(I) for f in range(Fg[g])] for g in GG]                                                                                                                                                # auxilliary lists for plant features
@@ -180,20 +181,20 @@ def multi(inp):
         idx[g]=np.where(idx[g])[0]
         
     plt.clf()                                                                                   # plot plant growth curves with mean +- standard deviation    
-    ax=plt.subplot(111)     
-    window=20
+    ax=plt.subplot(111)
+    window=10
     for g in GG:
         p2d=[pu2D[g][f] for f in idx[g]]                                                        # get 2D areas
         p3d=[pu3D[g][f] for f in idx[g]]                                                        # get 3D areas
-        savg=P4D_help.sliding_median(sp.stats.nanmean(p2d,0),window=window)
-        aavg=P4D_help.sliding_median(sp.stats.nanmean(p3d,0),window=window)   
-        sstd=P4D_help.sliding_median(sp.stats.nanstd(p2d,0,bias=1),window=window)
-        astd=P4D_help.sliding_median(sp.stats.nanstd(p3d,0,bias=1),window=window)   
+        savg=P4D_help.sliding_median(np.nanmean(p2d,0),window=window)
+        aavg=P4D_help.sliding_median(np.nanmean(p3d,0),window=window)   
+        sstd=P4D_help.sliding_median(np.nanstd(p2d,0,ddof=1),window=window)
+        astd=P4D_help.sliding_median(np.nanstd(p3d,0,ddof=1),window=window)   
         #ax.fill_between(II,savg-sstd,savg+sstd,color=colors[2*g+1],lw=0,alpha=0.2)
         ax.fill_between(II,aavg-astd,aavg+astd,color=colors[2*g+0],lw=0,alpha=0.2) 
         #ax.plot(II,savg,color=colors[2*g+1],lw=2,ls=styles[1])
         ax.plot(II,aavg,color=colors[2*g+0],lw=2,ls=styles[0]) 
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)                  # indicate nights by gray overlays
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)                  # indicate nights by gray overlays
     plt.ylabel('plant 3D area'+ummm)
     plt.xlim([0,900])
     plt.ylim([0,500])
@@ -201,15 +202,15 @@ def multi(inp):
     for g in GG:        
         p2d=[pu2D[g][f] for f in idx[g]]                                                        # get 2D areas
         p3d=[pu3D[g][f] for f in idx[g]]                                                        # get 3D areas
-        savg=P4D_help.sliding_median(sp.stats.nanmean(p2d,0),window=window)
-        aavg=P4D_help.sliding_median(sp.stats.nanmean(p3d,0),window=window)   
-        sstd=P4D_help.sliding_median(sp.stats.nanstd(p2d,0,bias=1),window=window)
-        astd=P4D_help.sliding_median(sp.stats.nanstd(p3d,0,bias=1),window=window)   
+        savg=P4D_help.sliding_median(np.nanmean(p2d,0),window=window)
+        aavg=P4D_help.sliding_median(np.nanmean(p3d,0),window=window)   
+        sstd=P4D_help.sliding_median(np.nanstd(p2d,0,ddof=1),window=window)
+        astd=P4D_help.sliding_median(np.nanstd(p3d,0,ddof=1),window=window)   
         #axins.fill_between(II,savg-sstd,savg+sstd,color=colors[2*g+1],lw=0,alpha=0.2)
         axins.fill_between(II,aavg-astd,aavg+astd,color=colors[2*g+0],lw=0,alpha=0.2) 
         #axins.plot(II,savg,color=colors[2*g+1],lw=2,ls=styles[1])
         axins.plot(II,aavg,color=colors[2*g+0],lw=2,ls=styles[0]) 
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='',alpha=0.2)
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='',alpha=0.2)
     x0,x1,y0,y1=250,450,10,130 
     axins.set_xlim(x0,x1)
     axins.set_ylim(y0,y1)    
@@ -232,11 +233,11 @@ def multi(inp):
     HC=HC
     for g in GG:
         p2D=[prer2D[g][f] for f in idx[g]]                                                              # get 2D RERs
-        avg2D=P4D_help.sliding_median(sp.stats.nanmean(p2D,0),window=2)[HC]
-        std2D=P4D_help.sliding_median(sp.stats.nanstd(p2D,0,bias=1),window=2)[HC]  
+        avg2D=P4D_help.sliding_median(np.nanmean(p2D,0),window=2)[HC]
+        std2D=P4D_help.sliding_median(np.nanstd(p2D,0,ddof=1),window=2)[HC]  
         p3D=[prer3D[g][f] for f in idx[g]]                                                              # get 3D RERs
-        avg3D=P4D_help.sliding_median(sp.stats.nanmean(p3D,0),window=2)[HC]
-        std3D=P4D_help.sliding_median(sp.stats.nanstd(p3D,0,bias=1),window=2)[HC]        
+        avg3D=P4D_help.sliding_median(np.nanmean(p3D,0),window=2)[HC]
+        std3D=P4D_help.sliding_median(np.nanstd(p3D,0,ddof=1),window=2)[HC]        
         #plt.fill_between(HX,avg2D-std2D,avg2D+std2D,color=colors[2*g+1],lw=0,alpha=0.2)
         #plt.plot(HX,avg2D,color=colors[2*g+1],alpha=1.0,lw=2,ls='--')
         plt.fill_between(HX,avg3D-std3D,avg3D+std3D,color=colors[2*g+0],lw=0,alpha=0.2)
@@ -255,8 +256,8 @@ def multi(inp):
     HC=range(H)[-di:]+range(H)[:-di]                                                                    # shift the RER plots by this frame number    
     for g in GG:
         p3D=[prer3D[g][f] for f in idx[g]]                                                              # get 3D RERs
-        avg3D=P4D_help.sliding_median(sp.stats.nanmean(p3D,0),window=2)[HC]
-        std3D=P4D_help.sliding_median(sp.stats.nanstd(p3D,0,bias=1),window=2)[HC]        
+        avg3D=P4D_help.sliding_median(np.nanmean(p3D,0),window=2)[HC]
+        std3D=P4D_help.sliding_median(np.nanstd(p3D,0,ddof=1),window=2)[HC]        
         avg3D=np.hstack([avg3D,avg3D[:12]])
         std3D=np.hstack([std3D,std3D[:12]])
         hx=np.hstack([HX,range(144,156)])
@@ -279,9 +280,9 @@ def multi(inp):
         plt.clf() 
         p3D=[prer3D[g][f] for f in idx[g]]  
         ang=[prela[g][f] for f in idx[g]] 
-        amu=sp.stats.nanmean(ang,0)
+        amu=np.nanmean(ang,0)
         avgan=P4D_help.sliding_median(np.diff(np.hstack([amu,amu[0]])),window=2)        
-        avg3D=P4D_help.sliding_median(sp.stats.nanmean(p3D,0),window=2)[HC]   
+        avg3D=P4D_help.sliding_median(np.nanmean(p3D,0),window=2)[HC]   
         ax1=plt.subplot(111)
         plt.plot(avg3D,color=colors[2*g+0],alpha=1.0,lw=2,ls='-',label=genon[g])
         plt.ylabel('plant RER'+upph)
@@ -321,13 +322,13 @@ def multi(inp):
         pn=np.hstack([pnavg[g][f][:5] for f in idx[g]])
         pd=pd[pd==pd]
         pn=pn[pn==pn]
-        davg=sp.stats.nanmean(pd)
-        dstd=sp.stats.nanstd(pd,bias=1)
-        navg=sp.stats.nanmean(pn)
-        nstd=sp.stats.nanstd(pn,bias=1)        
-        plt.errorbar(2*g+1,davg,yerr=dstd,ls='.',ecolor=colors[2*g+1],elinewidth=4,capsize=10,capthick=4,zorder=1)        
+        davg=np.nanmean(pd)
+        dstd=np.nanstd(pd,ddof=1)
+        navg=np.nanmean(pn)
+        nstd=np.nanstd(pn,ddof=1)        
+        plt.errorbar(2*g+1,davg,yerr=dstd,ls='dotted',ecolor=colors[2*g+1],elinewidth=4,capsize=10,capthick=4,zorder=1)        
         plt.bar(2*g+1,davg+99,width=0.9,lw=4,align='center',edgecolor=colors[2*g+1],color='white',zorder=2,ls='solid',bottom=-99)    
-        plt.errorbar(2*g+2,navg,yerr=nstd,ls='.',ecolor=colors[2*g+0],elinewidth=4,capsize=10,capthick=4,zorder=1)        
+        plt.errorbar(2*g+2,navg,yerr=nstd,ls='dotted',ecolor=colors[2*g+0],elinewidth=4,capsize=10,capthick=4,zorder=1)        
         plt.bar(2*g+2,navg+99,width=0.9,lw=4,align='center',edgecolor=colors[2*g+0],color='white',zorder=2,ls='solid',bottom=-99)  
         tts[g]=sp.stats.ttest_ind(pd,pn)[1]
     for g in GG:
@@ -342,16 +343,16 @@ def multi(inp):
     ################################################################ paper 4d: plant full reli      
     
     plt.clf()                                                                                                   # plot reliability angles over the full time
-    reli=sp.stats.nanmean(pfelc[0],0) 
+    reli=np.nanmean(pfelc[0],0) 
     plt.imshow(reli,origin='lower',interpolation='nearest',vmin=-25.0,vmax=25.0,aspect='auto')  
     cb=plt.colorbar(orientation='vertical',aspect=40,format="%.f",ticks=range(-25,26,5))
     cb.set_label('leaf z-angle base-tip'+udeg)      
     for g in range(G):
-        avg=P4D_help.sliding_median(sp.stats.nanmean(pfela[g],0),window=2)*2.0+50.0
-        std=P4D_help.sliding_median(sp.stats.nanstd(pfela[g],0,bias=1),window=2)
+        avg=P4D_help.sliding_median(np.nanmean(pfela[g],0),window=2)*2.0+50.0
+        std=P4D_help.sliding_median(np.nanstd(pfela[g],0,ddof=1),window=2)
         plt.fill_between(II,avg-std,avg+std,color=colors[2*g+0],lw=0,alpha=0.2)
         plt.plot(II,avg,color=colors[2*g+0],alpha=1.0,lw=2)
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)
     plt.ylabel('plant area'+uper)
     plt.xlabel('time'+udas)
     plt.xlim([0,900])
@@ -364,13 +365,13 @@ def multi(inp):
     ################################################################ paper 4e: plant fold reli          
     
     plt.clf()                                                                                                   # plot reliability angles as 24-hour averages
-    reli=sp.stats.nanmean(prelc[0],0)  
+    reli=np.nanmean(prelc[0],0)  
     plt.imshow(reli,origin='lower',interpolation='nearest',vmin=-25.0,vmax=25.0,aspect='auto')  
     cb=plt.colorbar(orientation='vertical',aspect=40,format="%.f",ticks=range(-25,26,5))
     cb.set_label('leaf z-angle base-tip'+udeg)      
     for g in range(G):
-        avg=P4D_help.sliding_median(sp.stats.nanmean(prela[g],0),window=2)*2.0+50.0
-        std=P4D_help.sliding_median(sp.stats.nanstd(prela[g],0,bias=1),window=2)*np.sqrt(2.0)
+        avg=P4D_help.sliding_median(np.nanmean(prela[g],0),window=2)*2.0+50.0
+        std=P4D_help.sliding_median(np.nanstd(prela[g],0,ddof=1),window=2)*np.sqrt(2.0)
         plt.fill_between(HX,(avg-std)[HX],(avg+std)[HX],color=colors[2*g+1],alpha=0.6,lw=0)
         plt.plot(HX,avg[HX],color=colors[2*g+0],alpha=1.0,lw=2)
     ax=P4D_help.xlabel_fold(HH,AnaSetupTimeBin,xlabel='time'+uhou) 
@@ -385,8 +386,8 @@ def multi(inp):
     plt.clf()                                                                                                   # plot plant asymmetry and compactness over time
     ax1=plt.subplot(111)
     for g in range(G):
-        avg=P4D_help.sliding_median(sp.stats.nanmean(puasym[g],0),window=20)
-        std=P4D_help.sliding_median(sp.stats.nanstd(puasym[g],0,bias=1),window=20)/1.0
+        avg=P4D_help.sliding_median(np.nanmean(puasym[g],0),window=10)
+        std=P4D_help.sliding_median(np.nanstd(puasym[g],0,ddof=1),window=10)/1.0
         ax1.fill_between(II,avg-std,avg+std,color=colors[2*g+0],alpha=0.2,lw=0)
         ax1.plot(II,avg,color=colors[2*g+0],lw=2,alpha=1.0)    
     plt.ylabel('plant asymmetry'+ummx)   
@@ -394,13 +395,13 @@ def multi(inp):
     plt.xlabel('time'+udas)   
     ax2=ax1.twinx()
     for g in range(G):
-        avg=P4D_help.sliding_median(sp.stats.nanmean(pucomp[g],0),window=2)
-        std=P4D_help.sliding_median(sp.stats.nanstd(pucomp[g],0,bias=1),window=2)
+        avg=P4D_help.sliding_median(np.nanmean(pucomp[g],0),window=2)
+        std=P4D_help.sliding_median(np.nanstd(pucomp[g],0,ddof=1),window=2)
         ax2.fill_between(II,avg-std,avg+std,color=colors[2*g+1],alpha=0.2,lw=0)
         ax2.plot(II,avg,color=colors[2*g+1],lw=2,ls='--')
     plt.ylabel('plant compactness')
     plt.ylim(ymin=0,ymax=1)
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)    
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)    
     plt.xlim([0,900])
     plt.savefig(project+'/fig4f_plantacc.svg') 
     #plt.show()      
@@ -414,11 +415,11 @@ def multi(inp):
     for g in range(G):
         for b in [1]+leafo:                                                                                     # here, include one cotyledon in plotting
             pa=[luarea[g][b][f] for f in range(Fg[g])]
-            avg=P4D_help.sliding_median(sp.stats.nanmedian(pa,0),window=20)                                     # use median 3D areas to ignore outliers
-            std=P4D_help.sliding_median(sp.stats.nanstd(pa,0,bias=1),window=20)
+            avg=P4D_help.sliding_median(np.nanmedian(pa,0),window=10)                                     # use median 3D areas to ignore outliers
+            std=P4D_help.sliding_median(np.nanstd(pa,0,ddof=1),window=10)
             plt.fill_between(II,avg-std,avg+std,color=cobs[b],alpha=0.2,lw=0)
             plt.plot(II,avg,color=cobs[b],lw=2,ls=styles[g])
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)    
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)    
     plt.ylabel('leaf area'+ummm)
     plt.xlim([0,900])
     plt.ylim([0,80])
@@ -431,8 +432,8 @@ def multi(inp):
     for g in GG:
         for ji,j in enumerate(leafo):
             pr=lrers[g][j]
-            avg=P4D_help.sliding_median(sp.stats.nanmedian(pr,0),window=2)
-            std=P4D_help.sliding_median(sp.stats.nanstd(pr,0,bias=1),window=2)
+            avg=P4D_help.sliding_median(np.nanmedian(pr,0),window=2)
+            std=P4D_help.sliding_median(np.nanstd(pr,0,ddof=1),window=2)
             plt.fill_between(HX,avg-std,avg+std,color=cobs[j],alpha=0.0,lw=0)
             plt.plot(HX,avg,color=cobs[j],lw=2,ls=styles[g])        
     ax=P4D_help.xlabel_fold(HH,AnaSetupTimeBin,xlabel='time'+uhou) 
@@ -451,10 +452,10 @@ def multi(inp):
             nstack=np.hstack([lnavg[g][j][f][:7] for f in range(Fg[g])])
             dstack=dstack[dstack==dstack]
             nstack=nstack[nstack==nstack]
-            davg=sp.stats.nanmean(dstack)
-            dstd=sp.stats.nanstd(dstack,bias=1)
-            navg=sp.stats.nanmean(nstack)
-            nstd=sp.stats.nanstd(nstack,bias=1)
+            davg=np.nanmean(dstack)
+            dstd=np.nanstd(dstack,ddof=1)
+            navg=np.nanmean(nstack)
+            nstd=np.nanstd(nstack,ddof=1)
             plt.errorbar(2*g+1+2*G*ji,davg,yerr=dstd,ecolor=cobs[j],elinewidth=4,capsize=10,capthick=4,ls=styles[g],zorder=1)        
             plt.bar(2*g+1+2*G*ji,davg+1,width=0.9,lw=4,align='center',ec=cobs[j],color='white',ls=stylo[g],zorder=2,bottom=-1)    
             plt.errorbar(2*g+2+2*G*ji,navg,yerr=nstd,ecolor=cobs[j],elinewidth=4,capsize=10,capthick=4,ls=styles[g],zorder=1)        
@@ -484,11 +485,11 @@ def multi(inp):
     plt.clf()
     for g in range(G):
         for ji,j in enumerate(leafo):
-            avg=P4D_help.sliding_median(sp.stats.nanmean(luzbt[g][j],0),window=20)
-            std=P4D_help.sliding_median(sp.stats.nanstd(luzbt[g][j],0,bias=1),window=20)
+            avg=P4D_help.sliding_median(np.nanmean(luzbt[g][j],0),window=10)
+            std=P4D_help.sliding_median(np.nanstd(luzbt[g][j],0,ddof=1),window=10)
             plt.fill_between(II,avg-std,avg+std,color=cobs[j],alpha=0.2,lw=0)
             plt.plot(II,avg,color=cobs[j],lw=2,ls=styles[g])
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)    
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)    
     plt.ylabel('leaf z-angle base-tip'+udeg)
     plt.xlim([0,I])
     plt.savefig(project+'/fig5d_leafullozbt.svg')
@@ -499,8 +500,8 @@ def multi(inp):
     plt.clf()                                                                                                   # plot reliability angle as 24-hour average
     for g in GG:
         for ji,j in enumerate(leafo):
-            avg=P4D_help.sliding_median(sp.stats.nanmean(lozbt[g][j],0),window=2)            
-            std=P4D_help.sliding_median(sp.stats.nanstd(lozbt[g][j],0,bias=1),window=2)
+            avg=P4D_help.sliding_median(np.nanmean(lozbt[g][j],0),window=2)            
+            std=P4D_help.sliding_median(np.nanstd(lozbt[g][j],0,ddof=1),window=2)
             plt.fill_between(HX,avg-std,avg+std,color=cobs[j],alpha=0.2,lw=0)
             plt.plot(HX,avg,color=cobs[j],lw=2,ls=styles[g])        
     ax=P4D_help.xlabel_fold(HH,AnaSetupTimeBin,xlabel='time'+uhou) 
@@ -517,8 +518,8 @@ def multi(inp):
         tt=[[] for g in range(G)]
         for g in range(G):           
             prop=np.array([f for f in ltime[g][b]])#if type(f)==float
-            avg=sp.stats.nanmean(prop)
-            std=sp.stats.nanstd(prop,bias=1)
+            avg=np.nanmean(prop)
+            std=np.nanstd(prop,ddof=1)
             plt.errorbar(G*b+g+1,avg,yerr=std,ecolor=cobs[b],elinewidth=4,capsize=10,capthick=4,zorder=1)        
             plt.bar(G*b+g+1,avg+1,width=0.9,lw=4,align='center',edgecolor=cobs[b],color='white',ls=stylo[g],zorder=2,bottom=-1) 
             tt[g]=prop[prop==prop]
@@ -542,11 +543,11 @@ def multi(inp):
     plt.clf()                                                                                                   # plot leaf curvature over the full time
     for g in range(G):
         for ji,j in enumerate(leafo):
-            avg=P4D_help.sliding_median(sp.stats.nanmean(lucurv[g][j],0),window=20)            
-            std=P4D_help.sliding_median(sp.stats.nanstd(lucurv[g][j],0,bias=1),window=20)
+            avg=P4D_help.sliding_median(np.nanmean(lucurv[g][j],0),window=10)            
+            std=P4D_help.sliding_median(np.nanstd(lucurv[g][j],0,ddof=1),window=10)
             plt.fill_between(II,avg-std,avg+std,color=cobs[j],alpha=0.2,lw=0)
             plt.plot(II,avg,color=cobs[j],lw=2,ls=styles[g])    
-    P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)
+    P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)
     plt.xlim([0,900])
     plt.ylabel('leaf curvature'+ummx)    
     plt.savefig(project+'/fig5g_leafcurv.svg')
@@ -557,9 +558,9 @@ def multi(inp):
     plt.clf()                                                                                                   # plot the 24-hour average leaf nutation as measured by the base-tip xy-angle
     for g in GG:
         for ji,j in enumerate(leafo):
-            avg=P4D_help.sliding_median(sp.stats.nanmean(loxbt[g][j],0),window=2)  
-            avg=avg-sp.stats.nanmean(avg)
-            std=P4D_help.sliding_median(sp.stats.nanstd(loxbt[g][j],0,bias=1),window=2)/100.0
+            avg=P4D_help.sliding_median(np.nanmean(loxbt[g][j],0),window=2)  
+            avg=avg-np.nanmean(avg)
+            std=P4D_help.sliding_median(np.nanstd(loxbt[g][j],0,ddof=1),window=2)/100.0
             plt.fill_between(HX,avg-std,avg+std,color=cobs[j],alpha=0.2,lw=0)
             plt.plot(HX,avg,color=cobs[j],lw=2,ls=styles[g])        
     ax=P4D_help.xlabel_fold(HH,AnaSetupTimeBin,xlabel='time'+uhou) 
@@ -590,8 +591,8 @@ def multi(inp):
                 pola.append(a[idx])
                 polx.append(x[idx])
                 poly.append(y[idx])
-                ax1.plot(a[::10],x[::10],color=colz[0],lw=2,marker='o',ls='.',alpha=0.1,mec='none',zorder=1)    # plot every 10th point only
-                ax2.plot(a[::10],y[::10],color=colz[1],lw=2,marker='s',ls='.',alpha=0.1,mec='none',zorder=1)    # plot every 10th point only     
+                ax1.plot(a[::10],x[::10],color=colz[0],lw=2,marker='o',ls='dotted',alpha=0.1,mec='none',zorder=1)    # plot every 10th point only
+                ax2.plot(a[::10],y[::10],color=colz[1],lw=2,marker='s',ls='dotted',alpha=0.1,mec='none',zorder=1)    # plot every 10th point only     
         ha=np.hstack(pola)
         hx=np.hstack(polx)
         hy=np.hstack(poly)
@@ -617,7 +618,3 @@ def multi(inp):
     print 'multi:','time spent',dt,'seconds','time remaining',(S-s)*dt/(3600.0*MainCores),'hours'                                   # print computation time statistics
     
     return 0
-        
-
-    
-

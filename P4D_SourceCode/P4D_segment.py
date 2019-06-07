@@ -139,7 +139,7 @@ def segment(inp):
         plt.imshow(1.0*imF,interpolation='nearest',alpha=1.0,origin='lower',cmap='gray')    
         plt.imshow(np.where(imPL,1.0,np.nan),interpolation='nearest',alpha=0.5,origin='lower')
         #plt.show()  
-        #plt.savefig("debug/first_original_check"+str(i).zfill(6)+'.png')
+        plt.savefig("debug/first_original_check"+str(i).zfill(6)+'.png')
 
         ################################################### find center of mass and its height
                 
@@ -167,7 +167,7 @@ def segment(inp):
         plt.plot(middle[1],middle[0],marker='s',ls='dotted',color='white')
         #plt.axis([x0,x1,y0,y1])
         #plt.show()
-        #plt.savefig("debug/second_original_check"+str(i).zfill(6)+'.png')
+        plt.savefig("debug/second_original_check"+str(i).zfill(6)+'.png')
         
         ################################################### segment leafs
                 
@@ -195,36 +195,36 @@ def segment(inp):
 
         imX2=skimage.feature.peak_local_max(imEDT,min_distance=15,indices=0,exclude_border=0)                   # find local maxima at smaller distances
         
-        pli.imsave("debug/local_maxima_at_smaller_distances"+str(i).zfill(6)+'.png', 1.0*imX2)
+        #pli.imsave("debug/local_maxima_at_smaller_distances"+str(i).zfill(6)+'.png', 1.0*imX2)
         
         imX6=skimage.feature.peak_local_max(imEDT,min_distance=30,indices=0,exclude_border=0)                   # find local maxima at larger distances
         
-        pli.imsave("debug/local_maxima_at_larger_distances"+str(i).zfill(6)+'.png', 1.0*imX6)
+        #pli.imsave("debug/local_maxima_at_larger_distances"+str(i).zfill(6)+'.png', 1.0*imX6)
         
         imX=np.where(imRA<100.0,imX2,imX6)                                                                      # keep closer maxima towards the middle and more distant maxima away from the middle of the plant
         
-        pli.imsave("debug/where_imRA_smaller_larger"+str(i).zfill(6)+'.png', 1.0*imX)
+        #pli.imsave("debug/where_imRA_smaller_larger"+str(i).zfill(6)+'.png', 1.0*imX)
         
         imSD1=skimage.filters.rank.maximum(imX,disk)>0                                                          # expand maxima to provide more robust seed points for watershed segmentation
         
-        pli.imsave("debug/expand_maxima"+str(i).zfill(6)+'.png', 1.0*imSD1)
+        #pli.imsave("debug/expand_maxima"+str(i).zfill(6)+'.png', 1.0*imSD1)
         
         imSD2=imEDT>(imRA*SegThresSlope+SegThresAbsci)                                                          # binarise distance transform with threshold that increases with distance from the middle of the plant
         
-        pli.imsave("debug/threshold_on_distance"+str(i).zfill(6)+'.png', 1.0*imSD2)
+        #pli.imsave("debug/threshold_on_distance"+str(i).zfill(6)+'.png', 1.0*imSD2)
 
         imL,N=sp.ndimage.label((imSD1+imSD2)>0,ones)                                                            # label the combined image of local maxima and thresholded distance transform
         imY=-1.0*skimage.filters.gaussian(1.0*imEDT*imPL,1.0)*imPL*imRA                                         # smooth the distance transform to fill out the whole plant and bias it towards to middle of the plant         
         
-        pli.imsave("debug/smooth_distance_transform"+str(i).zfill(6)+'.png', 1.0*imY)
+        #pli.imsave("debug/smooth_distance_transform"+str(i).zfill(6)+'.png', 1.0*imY)
         
         imSEG=skimage.morphology.watershed(imY,imL,mask=imPL)                                                   # perform the watershed segmentation     
         
-        pli.imsave("debug/watershed_segmentation"+str(i).zfill(6)+'.png', 1.0*imSEG)
+        #pli.imsave("debug/watershed_segmentation"+str(i).zfill(6)+'.png', 1.0*imSEG)
         
         L=imSEG.max()                                                                                           # compute the number of labeled leaves
         
-        print "num of leaves:", L
+        #print "num of leaves:", L
         
         for li,l in enumerate(range(1,L+1)):                                                                    # remove all labeled components with only few pixels
             imMASK=(imSEG==l)
@@ -232,7 +232,7 @@ def segment(inp):
                 imSEG[imMASK]=0
         imSEG=skimage.segmentation.relabel_sequential(imSEG)[0]                                                 # relabel leaves
         L=imSEG.max()                                                                                           # compute the number of labeled leaves
-        pli.imsave(dirM+'mats_t='+str(i).zfill(6)+'.png',1.0*imSEG,cmap='gray',origin='lower',vmin=0,vmax=255)  # export image of segmented plant and leaves                             
+        #pli.imsave(dirM+'mats_t='+str(i).zfill(6)+'.png',1.0*imSEG,cmap='gray',origin='lower',vmin=0,vmax=255)  # export image of segmented plant and leaves                             
 
         plt.clf()                                                                                              # plotting functions for testing purposes
         plt.imshow(imF,origin='lower',cmap='gray',alpha=0.5) 

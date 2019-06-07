@@ -67,7 +67,7 @@ SegRadiusLeafHeight=10.0                        # size of disk for determining h
 SegRadiusStemEraser=10.0                        # size of disk for removing leaf petioles
 
 AnaTrackOver=0                                  # overwrite tracking results
-AnaTrackStop=900                                # stop analyzing at given frame
+AnaTrackStop=20                                 # stop analyzing at given frame
 AnaTrackRange=30.0                              # maximal linkage distance for connecting leaf centers in pixels, default=30
 AnaTrackMemory=20                               # maximal frame gap to be bridged in number of frames, default=20
 AnaTrackMinlen=10                               # minimal length of tracks to be considered, default=10

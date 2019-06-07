@@ -103,7 +103,14 @@ def plot(inp):
     y0,y1=int(ax[2]*dxy/10.0),int(ax[3]*dxy/10.0)+2
     plt.axis(np.array([x0,x1-0.999,y0,y1-0.999])*10.0/dxy)
     plt.xticks(np.arange(x0,x1)*10.0/dxy,range(x0,x1))
-    plt.yticks(np.arange(y0,y1)*10.0/dxy,range(y0,y1))         
+    plt.yticks(np.arange(y0,y1)*10.0/dxy,range(y0,y1))
+    ## I had to try adding some different days to continue debugging the code
+    days[17]=17.
+    days[18]=18.
+    days[19]=19.
+    fint = np.vectorize(np.int)
+    days = fint(days)
+
     wh=np.where(np.diff(days))[0][:-2]
     wh=wh[days[wh[0]+1]%2::2]+1  
     fig.set_zticks(wh)
@@ -119,7 +126,7 @@ def plot(inp):
         plt.clf()
         sm=P4D_help.sliding_median(full[:I,q],window=2)
         plt.plot(II,sm,color=cobs[0],lw=2)
-        P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)    
+        P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)             
         plt.ylabel(name_full[q]+unit_full[q])
         plt.tight_layout()
         plt.savefig(folder+'/fig_plant_full_'+name_full[q]+'.svg')
@@ -130,7 +137,7 @@ def plot(inp):
         for b in range(B):            
             sm=P4D_help.sliding_median(full[:I,Q0+b*Q1+q],window=2)
             plt.plot(II,sm,color=cobs[b],lw=2)
-        P4D_help.xlabel_full(II,darks,midnights,days,xlabel='time'+udas,alpha=0.2)    
+        P4D_help.xlabel_full(II,np.uint64(darks),midnights,days,xlabel='time'+udas,alpha=0.2)    
         plt.ylabel(name_full[Q0+q]+unit_full[Q0+q][3:])
         plt.tight_layout()
         plt.savefig(folder+'/fig_leaf_full_'+name_full[Q0+q][3:]+'.svg')
@@ -176,9 +183,9 @@ def plot(inp):
         for d in range(2):
             prop=hist[:,2*q+d]
             props[d]=prop[prop==prop]
-            avg=sp.stats.nanmean(props[d])
-            std=sp.stats.nanstd(props[d],bias=1)
-            plt.errorbar(1+d,avg,yerr=std,ls='.',ecolor=cobs[0],elinewidth=4,capsize=10,capthick=4,alpha=1.0,zorder=1)        
+            avg=np.nanmean(props[d])
+            std=np.nanstd(props[d],ddof=1)
+            plt.errorbar(1+d,avg,yerr=std,ls='dotted',ecolor=cobs[0],elinewidth=4,capsize=10,capthick=4,alpha=1.0,zorder=1)        
             plt.bar(1+d,avg+99.0,width=0.9,lw=4,align='center',ec=cobs[0],color='white',alpha=1.0,bottom=-99.0,zorder=2)
         tt=sp.stats.ttest_ind(props[0],props[1])[1]
         ax=plt.axis()
@@ -198,9 +205,9 @@ def plot(inp):
                 qx=2*Q0+2*b*Q1+2*q
                 prop=hist[:,qx+d]
                 props[d]=prop[prop==prop]
-                avg=sp.stats.nanmean(props[d])
-                std=sp.stats.nanstd(props[d],bias=1)
-                plt.errorbar(2*b+d+1,avg,yerr=std,ls='.',ecolor=cobs[b],elinewidth=4,capsize=10,capthick=4,alpha=1.0,zorder=1)        
+                avg=np.nanmean(props[d])
+                std=np.nanstd(props[d],ddof=1)
+                plt.errorbar(2*b+d+1,avg,yerr=std,ls='dotted',ecolor=cobs[b],elinewidth=4,capsize=10,capthick=4,alpha=1.0,zorder=1)        
                 plt.bar(2*b+d+1,avg+99.0,width=0.9,lw=4,align='center',ec=cobs[b],color='white',alpha=1.0,bottom=-99.0,zorder=2) 
             if(len(props[0])>0 and len(props[1])>0):
                 ttp=sp.stats.ttest_ind(props[0],props[1])[1]
@@ -246,8 +253,3 @@ def plot(inp):
     print 'plot:','folder',f+1,F,'time spent',dt,'seconds','time remaining',(S-s)*dt/(3600.0*MainCores),'hours'                     # print computation time statistics
     
     return 0
-        
-
-        
-    
-
